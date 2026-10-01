@@ -8,7 +8,7 @@ import (
 	"github.com/hexlabelposition/gff/internal/downloader"
 )
 
-const version = "0.1.0-dev"
+const version = "0.1.0"
 
 func main() {
 	if err := run(); err != nil {

@@ -2,7 +2,7 @@
 
 `gff`(**go fast fetch**) is a CLI download manager written in Go as a practical learning project.
 The first release, v0.1.0, focuses on downloading a single file over HTTP or HTTPS.
-The current development version is `0.1.0-dev`.
+The current version is `0.1.0`.
 
 ## Requirements
 
