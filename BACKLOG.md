@@ -162,16 +162,16 @@ The goal is to implement the smallest functional single-file downloader.
 
 ### CLI
 
-- [ ] Accept a URL as a command-line argument.
+- [x] Accept a URL as a command-line argument.
 
 ```bash
 gff https://example.com/file.zip
 ```
 
-- [ ] Check that a URL was provided.
-- [ ] Validate the URL.
-- [ ] Return a clear error for invalid URLs.
-- [ ] Print basic usage/help and return a nonzero exit code on failure.
+- [x] Check that a URL was provided.
+- [x] Validate the URL.
+- [x] Return a clear error for invalid URLs.
+- [x] Print basic usage/help and return a nonzero exit code on failure.
 - [ ] Add basic `gff version` output for release tracking.
 
 ### HTTP
