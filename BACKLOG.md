@@ -1,4 +1,4 @@
-# GFF — Go Fast Fetch
+# gff
 
 `gff` (**Go Fast Fetch**) is a CLI download manager written in Go.
 
