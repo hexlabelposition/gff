@@ -212,7 +212,7 @@ HTTP response
 ### Tests
 
 - [x] Verify a successful download using a local HTTP server and compare saved contents.
-- [ ] Verify that HTTP 404 returns an error and creates no destination file.
+- [x] Verify that HTTP 404 returns an error and creates no destination file.
 - [ ] Verify redirects using a local HTTP server.
 - [ ] Verify that an existing destination file is not overwritten.
 
