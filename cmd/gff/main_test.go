@@ -66,11 +66,22 @@ func TestRunRejectsNotFound(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/missing.txt"}
 
+	err := run()
+	var statusErr *HTTPStatusError
+
+	if !errors.As(err, &statusErr) {
+		t.Fatalf("expected HTTPStatusError, got: %v", err)
+	}
+
 	if err := run(); err == nil {
 		t.Fatal("expected an error for HTTP 404")
 	}
 
-	_, err := os.Stat("missing.txt")
+	if statusErr.StatusCode != http.StatusNotFound {
+		t.Errorf("status: got %d, want 404", statusErr.StatusCode)
+	}
+
+	_, err = os.Stat("missing.txt")
 	if !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("expected no destination file, got: %v", err)
 	}

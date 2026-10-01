@@ -203,11 +203,11 @@ HTTP response
 
 ### Errors
 
-- [ ] Return errors correctly.
-- [ ] Use error wrapping with `%w`.
-- [ ] Add custom error types where appropriate.
-- [ ] Use `errors.Is` when checking an underlying or sentinel error.
-- [ ] Use `errors.As` when inspecting a typed error; defer this item if no real need exists.
+- [x] Return errors correctly.
+- [x] Use error wrapping with `%w`.
+- [x] Add custom error types where appropriate.
+- [x] Use `errors.Is` when checking an underlying or sentinel error.
+- [x] Use `errors.As` when inspecting a typed error; defer this item if no real need exists.
 
 ### Tests
 

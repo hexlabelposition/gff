@@ -57,7 +57,10 @@ func run() error {
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected HTTP status: %s", resp.Status)
+		return &HTTPStatusError{
+			URL:        parsed.String(),
+			StatusCode: resp.StatusCode,
+		}
 	}
 
 	fmt.Println("HTTP status:", resp.Status)
@@ -94,4 +97,17 @@ func run() error {
 
 	// Always return nil at the end of the run function to indicate success
 	return nil
+}
+
+type HTTPStatusError struct {
+	URL        string
+	StatusCode int
+}
+
+func (e *HTTPStatusError) Error() string {
+	return fmt.Sprintf(
+		"unexpected HTTP status %d for %s",
+		e.StatusCode,
+		e.URL,
+	)
 }
