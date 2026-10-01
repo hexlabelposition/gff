@@ -209,6 +209,13 @@ HTTP response
 - [ ] Use `errors.Is` when checking an underlying or sentinel error.
 - [ ] Use `errors.As` when inspecting a typed error; defer this item if no real need exists.
 
+### Tests
+
+- [x] Verify a successful download using a local HTTP server and compare saved contents.
+- [ ] Verify that HTTP 404 returns an error and creates no destination file.
+- [ ] Verify redirects using a local HTTP server.
+- [ ] Verify that an existing destination file is not overwritten.
+
 #### What We Learn
 
 - `net/http`
