@@ -214,7 +214,7 @@ HTTP response
 - [x] Verify a successful download using a local HTTP server and compare saved contents.
 - [x] Verify that HTTP 404 returns an error and creates no destination file.
 - [x] Verify redirects using a local HTTP server.
-- [ ] Verify that an existing destination file is not overwritten.
+- [x] Verify that an existing destination file is not overwritten.
 
 #### What We Learn
 

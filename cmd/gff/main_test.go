@@ -120,3 +120,45 @@ func TestRunFollowsRedirects(t *testing.T) {
 		t.Errorf("file content: got %q, want %q", string(data), want)
 	}
 }
+
+func TestRunPreservesExistingFile(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if _, err := io.WriteString(w, "new content\n"); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+
+	defer server.Close()
+
+	originalArgs := os.Args
+
+	t.Cleanup(func() {
+		os.Args = originalArgs
+	})
+
+	os.Args = []string{"gff", server.URL + "/existing.txt"}
+
+	const original = "original content\n"
+
+	if err := os.WriteFile("existing.txt", []byte(original), 0644); err != nil {
+		t.Fatalf("prepare existing file: %v", err)
+	}
+
+	if err := run(); !errors.Is(err, os.ErrExist) {
+		t.Fatalf("expected file-exists error, got: %v", err)
+	}
+
+	data, err := os.ReadFile("existing.txt")
+
+	if err != nil {
+		t.Fatalf("read existing file: %v", err)
+	}
+
+	if string(data) != original {
+		t.Errorf("existing file content changed: got %q, want %q", string(data), original)
+	}
+}
