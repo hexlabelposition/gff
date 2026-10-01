@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 )
@@ -37,5 +38,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Fetching URL:", parsed.String())
+	resp, err := http.Get(parsed.String())
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error fetching URL:", err)
+		os.Exit(1)
+	}
+
+	// Ensure the response body is closed when we're done with it
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, "Error closing response body:", err)
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		// Close the response body before exiting
+		if err := resp.Body.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, "Error closing response body:", err)
+		}
+
+		fmt.Fprintln(os.Stderr, "Error: received non-OK HTTP status:", resp.Status)
+		os.Exit(1)
+	}
+
+	fmt.Println("HTTP status:", resp.Status)
 }

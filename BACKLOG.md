@@ -176,8 +176,8 @@ gff https://example.com/file.zip
 
 ### HTTP
 
-- [ ] Perform an HTTP `GET` request.
-- [ ] Check the HTTP status code.
+- [x] Perform an HTTP `GET` request.
+- [x] Check the HTTP status code.
 - [ ] Support redirects.
 - [ ] Read the response body as a stream.
 
