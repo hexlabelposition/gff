@@ -254,11 +254,11 @@ Add `context.Context` to this API in Phase 4 when cancellation is introduced.
 
 ### Tasks
 
-- [ ] Create `Downloader`.
-- [ ] Pass dependencies through a constructor.
-- [ ] Remove the HTTP client from global state.
-- [ ] Implement a dedicated `DownloadRequest` type.
-- [ ] Implement `DownloadResult`.
+- [x] Create `Downloader`.
+- [x] Pass dependencies through a constructor.
+- [x] Remove the HTTP client from global state.
+- [x] Implement a dedicated `DownloadRequest` type.
+- [x] Implement `DownloadResult`.
 
 Example:
 

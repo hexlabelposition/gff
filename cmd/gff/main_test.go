@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/hexlabelposition/gff/internal/downloader"
 )
 
 func TestRunDownloadsFile(t *testing.T) {
@@ -67,7 +69,7 @@ func TestRunRejectsNotFound(t *testing.T) {
 	os.Args = []string{"gff", server.URL + "/missing.txt"}
 
 	err := run()
-	var statusErr *HTTPStatusError
+	var statusErr *downloader.HTTPStatusError
 
 	if !errors.As(err, &statusErr) {
 		t.Fatalf("expected HTTPStatusError, got: %v", err)
