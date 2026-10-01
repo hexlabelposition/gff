@@ -118,13 +118,13 @@ Target release: **v0.1.0**.
 
 ### Project Initialization
 
-- [ ] Initialize a Go module.
-- [ ] Create the basic project structure.
-- [ ] Add `README.md`.
-- [ ] Add `.gitignore`.
-- [ ] Add `LICENSE`.
-- [ ] Set up formatting with `gofmt`.
-- [ ] Set up `go vet`.
+- [x] Initialize a Go module.
+- [x] Create the basic project structure.
+- [x] Add `README.md`.
+- [x] Add `.gitignore`.
+- [x] Add `LICENSE`.
+- [x] Set up formatting with `gofmt`.
+- [x] Set up `go vet`.
 - [ ] Set up `golangci-lint`.
 - [ ] Add basic CI.
 
