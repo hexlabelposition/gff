@@ -125,7 +125,7 @@ Target release: **v0.1.0**.
 - [x] Add `LICENSE`.
 - [x] Set up formatting with `gofmt`.
 - [x] Set up `go vet`.
-- [ ] Set up `golangci-lint`.
+- [x] Set up `golangci-lint`.
 - [ ] Add basic CI.
 
 Initial structure (add other packages as features appear):
