@@ -178,14 +178,14 @@ gff https://example.com/file.zip
 
 - [x] Perform an HTTP `GET` request.
 - [x] Check the HTTP status code.
-- [ ] Support redirects.
-- [ ] Read the response body as a stream.
+- [x] Support redirects.
+- [x] Read the response body as a stream.
 
 ### File I/O
 
-- [ ] Determine the filename from the URL.
-- [ ] Create the destination file.
-- [ ] Stream the response directly into the file.
+- [x] Determine the filename from the URL.
+- [x] Create the destination file.
+- [x] Stream the response directly into the file.
 
 Do not load the entire file into memory.
 
