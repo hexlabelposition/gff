@@ -6,10 +6,17 @@ import (
 	"os"
 )
 
+const version = "0.1.0-dev"
+
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "Usage: gff <url>")
+		fmt.Fprintln(os.Stderr, "Usage: gff <url> | gff version")
 		os.Exit(1)
+	}
+
+	if os.Args[1] == "version" {
+		fmt.Println("gff", version)
+		return
 	}
 
 	rawURL := os.Args[1]

@@ -172,7 +172,7 @@ gff https://example.com/file.zip
 - [x] Validate the URL.
 - [x] Return a clear error for invalid URLs.
 - [x] Print basic usage/help and return a nonzero exit code on failure.
-- [ ] Add basic `gff version` output for release tracking.
+- [x] Add basic `gff version` output for release tracking.
 
 ### HTTP
 
