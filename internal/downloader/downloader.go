@@ -25,10 +25,11 @@ type DownloadRequest struct {
 }
 
 type DownloadResult struct {
-	Path       string
-	Size       int64
-	Duration   time.Duration
-	StatusCode int
+	Path          string
+	Size          int64
+	Duration      time.Duration
+	StatusCode    int
+	ContentLength int64 // Expected body size; -1 means unknown.
 }
 
 func (d *Downloader) Download(
@@ -102,10 +103,11 @@ func (d *Downloader) Download(
 	}
 
 	return DownloadResult{
-		Path:       filename,
-		Size:       written,
-		Duration:   time.Since(started),
-		StatusCode: resp.StatusCode,
+		Path:          filename,
+		Size:          written,
+		Duration:      time.Since(started),
+		StatusCode:    resp.StatusCode,
+		ContentLength: resp.ContentLength,
 	}, nil
 }
 

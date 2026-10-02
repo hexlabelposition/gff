@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -15,6 +16,8 @@ func TestDownloadUsesDestination(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Length", strconv.Itoa(len(want)))
+
 			if _, err := io.WriteString(w, want); err != nil {
 				t.Errorf("write response: %v", err)
 			}
@@ -32,6 +35,14 @@ func TestDownloadUsesDestination(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("download: %v", err)
+	}
+
+	if result.ContentLength != int64(len(want)) {
+		t.Errorf(
+			"content length: got %d, want %d",
+			result.ContentLength,
+			len(want),
+		)
 	}
 
 	if result.Path != destination {

@@ -4,6 +4,10 @@
 
 Progress reporting is planned for v0.2.0.
 
+### Added
+
+- Expected response size in download results.
+
 ## [0.1.0] - 2026-10-02
 
 ### Added
