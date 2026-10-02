@@ -335,7 +335,7 @@ ETA 38s
 - [x] Test progress callbacks for successful and partial writes.
 - [x] Test CLI progress text for known, unknown, and zero sizes.
 - [x] Test progress bar boundaries and omit the bar when the total size is unknown or zero.
-- [ ] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
+- [x] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
 - [ ] Verify single-line updates and clean line endings after successful and failed downloads.
 
 ### Remaining Work — Follow This Order
