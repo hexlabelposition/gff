@@ -62,7 +62,8 @@ func formatProgress(written, total int64, elapsed time.Duration) string {
 
 	if percentKnown {
 		text = fmt.Sprintf(
-			"%.1f%% | %s / %s",
+			"%s %.1f%% | %s / %s",
+			progress.FormatBar(percent, 20),
 			percent,
 			progress.FormatBytes(written),
 			progress.FormatBytes(total),

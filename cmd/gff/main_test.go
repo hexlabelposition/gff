@@ -185,11 +185,16 @@ func TestFormatProgress(t *testing.T) {
 		elapsed  time.Duration
 		expected string
 	}{
-		{"quarter complete", 250, 1000, time.Second, "25.0% | 250 B / 1000 B | 250 B/s | ETA 3s"},
-		{"complete", 1000, 1000, time.Second, "100.0% | 1000 B / 1000 B | 1000 B/s | ETA 0s"},
+		{"quarter complete", 250, 1000, time.Second,
+			"█████░░░░░░░░░░░░░░░ 25.0% | 250 B / 1000 B | 250 B/s | ETA 3s"},
+
+		{"complete", 1000, 1000, time.Second,
+			"████████████████████ 100.0% | 1000 B / 1000 B | 1000 B/s | ETA 0s"},
+
+		{"no bytes written", 0, 1000, 2 * time.Second,
+			"░░░░░░░░░░░░░░░░░░░░ 0.0% | 0 B / 1000 B | 0 B/s"},
 		{"unknown total", 250, -1, time.Second, "250 B downloaded | 250 B/s"},
 		{"empty response", 0, 0, time.Second, "0 B downloaded | 0 B/s"},
-		{"no bytes written", 0, 1000, time.Second * 2, "0.0% | 0 B / 1000 B | 0 B/s"},
 	}
 
 	for _, tt := range tests {

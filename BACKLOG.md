@@ -324,7 +324,7 @@ ETA 38s
 
 - [x] Display downloaded bytes, percentage, average speed, and ETA.
 - [x] Omit percentage and ETA for unknown or zero content length.
-- [ ] Display a progress bar when the total size is known.
+- [x] Display a progress bar when the total size is known.
 - [ ] Update progress on a single terminal line and clear leftover text from longer updates.
 - [ ] Finish the progress line before the success message or an error message.
 
@@ -334,7 +334,7 @@ ETA 38s
 - [x] Test percentage, average speed, ETA, and byte formatting.
 - [x] Test progress callbacks for successful and partial writes.
 - [x] Test CLI progress text for known, unknown, and zero sizes.
-- [ ] Test progress bar boundaries and omit the bar when the total size is unknown or zero.
+- [x] Test progress bar boundaries and omit the bar when the total size is unknown or zero.
 - [ ] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
 - [ ] Verify single-line updates and clean line endings after successful and failed downloads.
 

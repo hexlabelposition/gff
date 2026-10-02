@@ -27,3 +27,30 @@ func TestFormatBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatBar(t *testing.T) {
+	tests := []struct {
+		name     string
+		percent  float64
+		width    int
+		expected string
+	}{
+		{"zero percent", 0, 10, "░░░░░░░░░░"},
+		{"half complete", 50, 10, "█████░░░░░"},
+		{"full percent", 100, 10, "██████████"},
+		{"over full percent", 150, 10, "██████████"},
+		{"negative width", 50, -1, ""},
+		{"negative percent", -10, 10, "░░░░░░░░░░"},
+		{"zero width", 50, 0, ""},
+		{"fractional fill", 40, 4, "█░░░"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := FormatBar(tt.percent, tt.width)
+			if result != tt.expected {
+				t.Errorf("FormatBar(%f, %d) = %s; expected %s", tt.percent, tt.width, result, tt.expected)
+			}
+		})
+	}
+}
