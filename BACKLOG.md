@@ -325,7 +325,7 @@ ETA 38s
 - [x] Display downloaded bytes, percentage, average speed, and ETA.
 - [x] Omit percentage and ETA for unknown or zero content length.
 - [x] Display a progress bar when the total size is known.
-- [ ] Update progress on a single terminal line and clear leftover text from longer updates.
+- [x] Update progress on a single terminal line and clear leftover text from longer updates.
 - [ ] Finish the progress line before the success message or an error message.
 
 ### Verification

@@ -31,14 +31,24 @@ func run() error {
 
 	client := &http.Client{}
 	started := time.Now()
+	progressShown := false
 	d := downloader.New(client)
 
 	result, err := d.Download(downloader.DownloadRequest{
 		URL: os.Args[1],
 		OnProgress: func(written, total int64) {
-			fmt.Println(formatProgress(written, total, time.Since(started)))
+			fmt.Printf(
+				// Use carriage return and clear line to overwrite the previous progress line
+				"\r\x1b[2K%s",
+				formatProgress(written, total, time.Since(started)),
+			)
+			progressShown = true
 		},
 	})
+
+	if progressShown {
+		fmt.Println()
+	}
 
 	if err != nil {
 		return err
