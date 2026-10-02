@@ -11,6 +11,8 @@ Progress reporting is planned for v0.2.0.
 - Calculate download percentage when the expected size is positive.
 - Calculate average download speed in bytes per second.
 - Estimate remaining download time from average speed.
+- Format byte sizes using binary units such as KiB, MiB, and GiB.
+- Keep percentage and ETA undefined for unknown or zero response sizes.
 
 ## [0.1.0] - 2026-10-02
 

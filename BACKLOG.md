@@ -310,14 +310,14 @@ ETA 38s
 - [x] Calculate percentage.
 - [x] Calculate download speed.
 - [x] Calculate ETA.
-- [ ] Handle unknown or zero content length without dividing by zero or inventing a percentage/ETA.
-- [ ] Format file sizes:
+- [x] Handle unknown or zero content length without dividing by zero or inventing a percentage/ETA.
+- [x] Format file sizes:
 
 ```text
 1024 B
-1.4 KB
-34.8 MB
-2.1 GB
+1.4 KiB
+34.8 MiB
+2.1 GiB
 ```
 
 ### Writer Wrapper
