@@ -306,7 +306,7 @@ ETA 38s
 ### Tasks
 
 - [x] Read `Content-Length`.
-- [ ] Track the number of downloaded bytes.
+- [x] Track the number of downloaded bytes.
 - [ ] Calculate percentage.
 - [ ] Calculate download speed.
 - [ ] Calculate ETA.

@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"time"
+
+	"github.com/hexlabelposition/gff/internal/progress"
 )
 
 type Downloader struct {
@@ -92,7 +94,12 @@ func (d *Downloader) Download(
 		return DownloadResult{}, fmt.Errorf("create file: %w", err)
 	}
 
-	written, copyErr := io.Copy(file, resp.Body)
+	progressWriter := &progress.ProgressWriter{
+		Writer: file,
+		Total:  resp.ContentLength,
+	}
+
+	written, copyErr := io.Copy(progressWriter, resp.Body)
 	closeErr := file.Close()
 
 	if copyErr != nil {
