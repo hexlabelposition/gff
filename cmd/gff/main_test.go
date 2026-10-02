@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,8 +37,20 @@ func TestRunDownloadsFile(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/hello.txt"}
 
-	if err := run(); err != nil {
+	var output bytes.Buffer
+
+	if err := run(&output); err != nil {
 		t.Fatalf("run: %v", err)
+	}
+
+	text := output.String()
+
+	if !strings.Contains(text, "\r\x1b[2K") {
+		t.Errorf("expected single-line progress update, got %q", text)
+	}
+
+	if !strings.Contains(text, "\nSaved hello.txt (18 bytes)\n") {
+		t.Errorf("expected result on a separate line, got %q", text)
 	}
 
 	data, err := os.ReadFile("hello.txt")
@@ -69,15 +83,11 @@ func TestRunRejectsNotFound(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/missing.txt"}
 
-	err := run()
+	err := run(io.Discard)
 	var statusErr *downloader.HTTPStatusError
 
 	if !errors.As(err, &statusErr) {
 		t.Fatalf("expected HTTPStatusError, got: %v", err)
-	}
-
-	if err := run(); err == nil {
-		t.Fatal("expected an error for HTTP 404")
 	}
 
 	if statusErr.StatusCode != http.StatusNotFound {
@@ -120,7 +130,7 @@ func TestRunFollowsRedirects(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/start.txt"}
 
-	if err := run(); err != nil {
+	if err := run(io.Discard); err != nil {
 		t.Fatalf("run: %v", err)
 	}
 
@@ -162,7 +172,7 @@ func TestRunPreservesExistingFile(t *testing.T) {
 		t.Fatalf("prepare existing file: %v", err)
 	}
 
-	if err := run(); !errors.Is(err, os.ErrExist) {
+	if err := run(io.Discard); !errors.Is(err, os.ErrExist) {
 		t.Fatalf("expected file-exists error, got: %v", err)
 	}
 
@@ -204,5 +214,60 @@ func TestFormatProgress(t *testing.T) {
 				t.Errorf("formatProgress() = %q, want %q", got, tt.expected)
 			}
 		})
+	}
+}
+
+func TestRunFinishesProgressLineOnDownloadError(t *testing.T) {
+	const want = "partial\n"
+
+	t.Chdir(t.TempDir())
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Length", "100")
+
+			if _, err := io.WriteString(w, want); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+
+	defer server.Close()
+
+	originalArgs := os.Args
+
+	t.Cleanup(func() {
+		os.Args = originalArgs
+	})
+
+	os.Args = []string{"gff", server.URL + "/broken.txt"}
+
+	var output bytes.Buffer
+
+	err := run(&output)
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("expected incomplete response error, got: %v", err)
+	}
+
+	text := output.String()
+
+	if !strings.Contains(text, "\r\x1b[2K") {
+		t.Errorf("expected progress before failure, got %q", text)
+	}
+	if !strings.HasSuffix(text, "\n") {
+		t.Errorf("expected finished progress line, got %q", text)
+	}
+	if strings.Contains(text, "Saved ") {
+		t.Errorf("unexpected success message: %q", text)
+	}
+
+	data, err := os.ReadFile("broken.txt")
+
+	if err != nil {
+		t.Fatalf("read downloaded file: %v", err)
+	}
+
+	if string(data) != want {
+		t.Errorf("file content: got %q, want %q", string(data), want)
 	}
 }

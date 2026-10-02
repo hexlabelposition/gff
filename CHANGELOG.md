@@ -19,6 +19,7 @@ Progress reporting is planned for v0.2.0.
 - Display a progress bar for downloads with a known positive size.
 - Update terminal progress on a single line.
 - Test download progress with known, unknown, and zero response sizes.
+- Finish the progress line before reporting success or download errors.
 
 ## [0.1.0] - 2026-10-02
 

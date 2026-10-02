@@ -326,7 +326,7 @@ ETA 38s
 - [x] Omit percentage and ETA for unknown or zero content length.
 - [x] Display a progress bar when the total size is known.
 - [x] Update progress on a single terminal line and clear leftover text from longer updates.
-- [ ] Finish the progress line before the success message or an error message.
+- [x] Finish the progress line before the success message or an error message.
 
 ### Verification
 
@@ -336,7 +336,7 @@ ETA 38s
 - [x] Test CLI progress text for known, unknown, and zero sizes.
 - [x] Test progress bar boundaries and omit the bar when the total size is unknown or zero.
 - [x] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
-- [ ] Verify single-line updates and clean line endings after successful and failed downloads.
+- [x] Verify single-line updates and clean line endings after successful and failed downloads.
 
 ### Remaining Work — Follow This Order
 
