@@ -1,7 +1,8 @@
 # gff
 
-`gff`(**go fast fetch**) is a CLI download manager written in Go as a practical learning project.
-The first release, v0.1.0, focuses on downloading a single file over HTTP or HTTPS.
+`gff` (**go fast fetch**) is a CLI download manager written in Go as a practical learning project.
+It downloads a single file over HTTP or HTTPS. Development for v0.2.0 adds
+terminal progress reporting to the initial v0.1.0 downloader.
 The current development version is `0.2.0-dev`.
 The latest release is `0.1.0`.
 
@@ -47,10 +48,44 @@ gff version
 - Reports the saved filename and number of bytes on success.
 - Prints errors to stderr and exits with a nonzero status on failure.
 
+## Download Progress
+
+The development version updates progress on a single terminal line. When the
+response has a known positive size, it shows a progress bar, percentage,
+downloaded and expected sizes, average speed, and estimated remaining time (ETA).
+
+Example progress during a download:
+
+```text
+█████░░░░░░░░░░░░░░░ 25.0% | 250 B / 1000 B | 250 B/s | ETA 3s
+```
+
+Sizes use binary units: 1 KiB is 1024 bytes, 1 MiB is 1024 KiB, and 1 GiB is
+1024 MiB. Speed is displayed in bytes or binary units per second and averaged
+over the elapsed time since the download call began, including the wait for
+the HTTP response. ETA uses that average speed and is omitted until it can be
+calculated.
+
+If the response size is unknown or zero, progress omits the bar, percentage,
+expected size, and ETA. Updates for an unknown-size response look like:
+
+```text
+250 B downloaded | 250 B/s
+```
+
+An empty response may produce no progress updates; the resulting empty file is
+still saved. After a successful download or a returned download error, the
+progress line is finished before the result or error is printed.
+
 ## Current Limitations
 
-Progress reporting, resume support, retries, concurrent downloads, and queue
-management are planned in [BACKLOG.md](BACKLOG.md).
+Resume support, retries, concurrent downloads, and queue management are planned
+in [BACKLOG.md](BACKLOG.md).
+
+Progress output is intended for ANSI-compatible terminals. Redirected stdout
+includes terminal control sequences; plain output mode is not yet implemented.
+Ctrl+C currently interrupts the process without graceful shutdown and may leave
+the progress line unfinished. Signal handling is planned for v0.3.0.
 
 A failed or interrupted download can leave an incomplete destination file.
 The current version cannot resume it and will refuse to overwrite it on the next
@@ -84,7 +119,10 @@ is correct. Format changed Go files with `gofmt -w <path>`.
 
 Tests use local HTTP servers and temporary directories. They cover successful
 downloads, HTTP 404 responses, redirects, preservation of existing files, and
-the downloader API's destination and result fields.
+the downloader API's destination and result fields. Progress tests cover byte
+counting and partial writes, percentages, speed, ETA, size and bar formatting,
+callbacks, and known, unknown, and zero response sizes. CLI tests verify that
+progress lines finish on success and when an HTTP response ends prematurely.
 
 GitHub Actions runs formatting, vet, lint, tests, and a build on pushes and pull
 requests.
@@ -93,6 +131,8 @@ requests.
 
 - `cmd/gff/`: CLI entry point and CLI integration tests.
 - `internal/downloader/`: downloader API, HTTP status error type, and API tests.
+- `internal/progress/`: byte-counting writer, progress calculations, formatting,
+  and tests.
 - `BACKLOG.md`: development phases and release milestones.
 - `CHANGELOG.md`: release changes.
 

@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-Progress reporting is planned for v0.2.0.
-
 ### Added
 
 - Expected response size in download results.
@@ -20,6 +18,13 @@ Progress reporting is planned for v0.2.0.
 - Update terminal progress on a single line.
 - Test download progress with known, unknown, and zero response sizes.
 - Finish the progress line before reporting success or download errors.
+
+### Known Limitations
+
+- Progress output requires an ANSI-compatible terminal; redirected stdout
+  contains terminal control sequences.
+- Ctrl+C does not yet shut down gracefully and may leave the progress line
+  unfinished. Signal handling is planned for v0.3.0.
 
 ## [0.1.0] - 2026-10-02
 

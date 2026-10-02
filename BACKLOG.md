@@ -338,13 +338,20 @@ ETA 38s
 - [x] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
 - [x] Verify single-line updates and clean line endings after successful and failed downloads.
 
-### Remaining Work — Follow This Order
+### Release Preparation — Follow This Order
 
-1. Commit the current CLI progress output and its formatting tests.
-2. Implement and test the progress bar for a known positive size. Keep raw percentage calculations unchanged; clamp only the bar's filled width to its valid range.
-3. Implement single-line terminal updates, clear leftover characters, and finish the line after success or failure.
-4. Complete the remaining verification items above, including unknown-size and empty responses.
-5. Update README and CHANGELOG, run release checks, and follow the release checklist for `v0.2.0`.
+- [x] Commit the CLI progress output and its formatting tests.
+- [x] Implement and test the progress bar for a known positive size. Keep raw percentage calculations unchanged; clamp only the bar's filled width to its valid range.
+- [x] Implement single-line terminal updates, clear leftover characters, and finish the line after success or failure.
+- [x] Complete the verification items above, including unknown-size and empty responses.
+- [x] Update README and CHANGELOG with implemented progress behavior and current terminal limitations.
+- [ ] Commit the documentation, run final formatting, vet, test, lint, and build checks, and verify the built CLI.
+- [ ] Push the reviewed changes and confirm CI passes.
+- [ ] Follow the release checklist to update version metadata, verify the release commit, and tag `v0.2.0`.
+
+For v0.2.0, progress output targets ANSI-compatible terminals. Redirected stdout
+contains control sequences. Graceful signal handling belongs to Phase 4;
+automatic plain output for non-terminal destinations is a future CLI task.
 
 Keep the application version at `0.2.0-dev` until release preparation. Complete this phase before starting Phase 4; additional features should be assigned to a future phase before implementation.
 
