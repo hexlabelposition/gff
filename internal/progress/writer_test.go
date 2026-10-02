@@ -56,3 +56,30 @@ func TestProgressWriterCountsPartialWrite(t *testing.T) {
 		t.Errorf("written: got %d, want 2", writer.Written)
 	}
 }
+
+func TestProgressWriterPercent(t *testing.T) {
+	tests := []struct {
+		name        string
+		written     int64
+		total       int64
+		wantPercent float64
+		wantKnown   bool
+	}{
+		{"zero written", 0, 100, 0, true},
+		{"quarter written", 25, 100, 25, true},
+		{"all written", 100, 100, 100, true},
+		{"more than total", 150, 100, 150, true},
+		{"zero total", 0, 0, 0, false},
+		{"unknown total", 10, -1, 0, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &ProgressWriter{Written: tt.written, Total: tt.total}
+			gotPercent, gotKnown := writer.Percent()
+			if gotPercent != tt.wantPercent || gotKnown != tt.wantKnown {
+				t.Errorf("Percent() = (%v, %v), want (%v, %v)", gotPercent, gotKnown, tt.wantPercent, tt.wantKnown)
+			}
+		})
+	}
+}

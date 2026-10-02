@@ -307,7 +307,7 @@ ETA 38s
 
 - [x] Read `Content-Length`.
 - [x] Track the number of downloaded bytes.
-- [ ] Calculate percentage.
+- [x] Calculate percentage.
 - [ ] Calculate download speed.
 - [ ] Calculate ETA.
 - [ ] Handle unknown or zero content length without dividing by zero or inventing a percentage/ETA.

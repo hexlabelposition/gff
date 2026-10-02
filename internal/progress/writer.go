@@ -13,3 +13,13 @@ func (w *ProgressWriter) Write(p []byte) (int, error) {
 	w.Written += int64(n)
 	return n, err
 }
+
+func (w *ProgressWriter) Percent() (float64, bool) {
+	if w.Total <= 0 {
+		return 0, false
+	}
+
+	percent := float64(w.Written) / float64(w.Total) * 100
+
+	return percent, true
+}
