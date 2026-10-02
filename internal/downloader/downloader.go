@@ -24,6 +24,7 @@ func New(client *http.Client) *Downloader {
 type DownloadRequest struct {
 	URL         string
 	Destination string
+	OnProgress  func(written, total int64)
 }
 
 type DownloadResult struct {
@@ -95,8 +96,9 @@ func (d *Downloader) Download(
 	}
 
 	progressWriter := &progress.ProgressWriter{
-		Writer: file,
-		Total:  resp.ContentLength,
+		Writer:     file,
+		Total:      resp.ContentLength,
+		OnProgress: request.OnProgress,
 	}
 
 	written, copyErr := io.Copy(progressWriter, resp.Body)

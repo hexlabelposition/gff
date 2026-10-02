@@ -6,14 +6,21 @@ import (
 )
 
 type ProgressWriter struct {
-	Writer  io.Writer
-	Total   int64
-	Written int64
+	Writer     io.Writer
+	Total      int64
+	Written    int64
+	OnProgress func(written, total int64)
 }
 
 func (w *ProgressWriter) Write(p []byte) (int, error) {
 	n, err := w.Writer.Write(p)
 	w.Written += int64(n)
+
+	// Call the OnProgress callback if it's set
+	if w.OnProgress != nil {
+		w.OnProgress(w.Written, w.Total)
+	}
+
 	return n, err
 }
 

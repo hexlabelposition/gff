@@ -44,7 +44,19 @@ func (partialWriter) Write(p []byte) (int, error) {
 }
 
 func TestProgressWriterCountsPartialWrite(t *testing.T) {
-	writer := &ProgressWriter{Writer: partialWriter{}}
+	var updates []update
+
+	writer := &ProgressWriter{
+		Writer: partialWriter{},
+		Total:  5,
+		OnProgress: func(written, total int64) {
+			updates = append(updates, update{
+				written: written,
+				total:   total,
+			})
+		},
+	}
+
 	n, err := writer.Write([]byte("hello"))
 
 	if n != 2 {
@@ -55,6 +67,16 @@ func TestProgressWriterCountsPartialWrite(t *testing.T) {
 	}
 	if writer.Written != 2 {
 		t.Errorf("written: got %d, want 2", writer.Written)
+	}
+
+	if len(updates) != 1 {
+		t.Fatalf("update count: got %d, want 1", len(updates))
+	}
+
+	want := update{written: 2, total: 5}
+
+	if updates[0] != want {
+		t.Errorf("update: got %+v, want %+v", updates[0], want)
 	}
 }
 
@@ -139,5 +161,53 @@ func TestProgressWriterETA(t *testing.T) {
 				t.Errorf("ETA() = (%v, %v), want (%v, %v)", gotETA, gotKnown, tt.wantETA, tt.wantKnown)
 			}
 		})
+	}
+}
+
+type update struct {
+	written int64
+	total   int64
+}
+
+func TestProgressWriterReportsProgress(t *testing.T) {
+	var updates []update
+
+	writer := &ProgressWriter{
+		Writer: io.Discard,
+		Total:  11,
+		OnProgress: func(written, total int64) {
+			updates = append(updates, update{
+				written: written,
+				total:   total,
+			})
+		},
+	}
+
+	n, err := writer.Write([]byte("hello"))
+	if err != nil {
+		t.Fatalf("first write: %v", err)
+	}
+	if n != 5 {
+		t.Errorf("first write count: got %d, want 5", n)
+	}
+
+	n, err = writer.Write([]byte(" world"))
+	if err != nil {
+		t.Fatalf("second write: %v", err)
+	}
+	if n != 6 {
+		t.Errorf("second write count: got %d, want 6", n)
+	}
+
+	if len(updates) != 2 {
+		t.Fatalf("update count: got %d, want 2", len(updates))
+	}
+
+	if updates[0] != (update{written: 5, total: 11}) {
+		t.Errorf("first update: got %+v, want %+v", updates[0], update{written: 5, total: 11})
+	}
+
+	if updates[1] != (update{written: 11, total: 11}) {
+		t.Errorf("second update: got %+v, want %+v", updates[1], update{written: 11, total: 11})
 	}
 }
