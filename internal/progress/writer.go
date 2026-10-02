@@ -1,6 +1,9 @@
 package progress
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 type ProgressWriter struct {
 	Writer  io.Writer
@@ -22,4 +25,12 @@ func (w *ProgressWriter) Percent() (float64, bool) {
 	percent := float64(w.Written) / float64(w.Total) * 100
 
 	return percent, true
+}
+
+func (w *ProgressWriter) Speed(elapsed time.Duration) float64 {
+	if elapsed <= 0 {
+		return 0
+	}
+
+	return float64(w.Written) / elapsed.Seconds()
 }

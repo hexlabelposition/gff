@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"testing"
+	"time"
 )
 
 func TestProgressWriterWritesAndCounts(t *testing.T) {
@@ -79,6 +80,32 @@ func TestProgressWriterPercent(t *testing.T) {
 			gotPercent, gotKnown := writer.Percent()
 			if gotPercent != tt.wantPercent || gotKnown != tt.wantKnown {
 				t.Errorf("Percent() = (%v, %v), want (%v, %v)", gotPercent, gotKnown, tt.wantPercent, tt.wantKnown)
+			}
+		})
+	}
+}
+
+func TestProgressWriterSpeed(t *testing.T) {
+	tests := []struct {
+		name      string
+		written   int64
+		elapsed   time.Duration
+		wantSpeed float64
+	}{
+		{"no bytes written", 0, time.Second, 0},
+		{"one second", 1000, time.Second, 1000},
+		{"two seconds", 1000, 2 * time.Second, 500},
+		{"half second", 1000, 500 * time.Millisecond, 2000},
+		{"zero elapsed time", 1000, 0, 0},
+		{"negative elapsed time", 1000, -time.Second, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &ProgressWriter{Written: tt.written}
+			gotSpeed := writer.Speed(tt.elapsed)
+			if gotSpeed != tt.wantSpeed {
+				t.Errorf("Speed() = %v, want %v", gotSpeed, tt.wantSpeed)
 			}
 		})
 	}
