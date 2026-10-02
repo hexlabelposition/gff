@@ -110,3 +110,34 @@ func TestProgressWriterSpeed(t *testing.T) {
 		})
 	}
 }
+
+func TestProgressWriterETA(t *testing.T) {
+	tests := []struct {
+		name      string
+		written   int64
+		total     int64
+		elapsed   time.Duration
+		wantETA   time.Duration
+		wantKnown bool
+	}{
+		{"quarter complete", 250, 1000, time.Second, 3 * time.Second, true},
+		{"half complete", 500, 1000, 2 * time.Second, 2 * time.Second, true},
+		{"complete", 1000, 1000, time.Second, 0, true},
+		{"written exceeds total", 1200, 1000, time.Second, 0, true},
+		{"no bytes written", 0, 1000, time.Second, 0, false},
+		{"zero elapsed time", 250, 1000, 0, 0, false},
+		{"negative elapsed time", 250, 1000, -time.Second, 0, false},
+		{"unknown total", 10, -1, time.Second, 0, false},
+		{"zero total", 0, 0, time.Second, 0, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &ProgressWriter{Written: tt.written, Total: tt.total}
+			gotETA, gotKnown := writer.ETA(tt.elapsed)
+			if gotETA != tt.wantETA || gotKnown != tt.wantKnown {
+				t.Errorf("ETA() = (%v, %v), want (%v, %v)", gotETA, gotKnown, tt.wantETA, tt.wantKnown)
+			}
+		})
+	}
+}

@@ -309,7 +309,7 @@ ETA 38s
 - [x] Track the number of downloaded bytes.
 - [x] Calculate percentage.
 - [x] Calculate download speed.
-- [ ] Calculate ETA.
+- [x] Calculate ETA.
 - [ ] Handle unknown or zero content length without dividing by zero or inventing a percentage/ETA.
 - [ ] Format file sizes:
 

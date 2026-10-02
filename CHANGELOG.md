@@ -10,6 +10,7 @@ Progress reporting is planned for v0.2.0.
 - Track written bytes during downloads with a progress writer.
 - Calculate download percentage when the expected size is positive.
 - Calculate average download speed in bytes per second.
+- Estimate remaining download time from average speed.
 
 ## [0.1.0] - 2026-10-02
 

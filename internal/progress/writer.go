@@ -34,3 +34,25 @@ func (w *ProgressWriter) Speed(elapsed time.Duration) float64 {
 
 	return float64(w.Written) / elapsed.Seconds()
 }
+
+func (w *ProgressWriter) ETA(elapsed time.Duration) (time.Duration, bool) {
+	if w.Total <= 0 {
+		return 0, false
+	}
+
+	if w.Written >= w.Total {
+		return 0, true
+	}
+
+	speed := w.Speed(elapsed)
+
+	if speed <= 0 {
+		return 0, false
+	}
+
+	remaining := w.Total - w.Written
+	seconds := float64(remaining) / speed
+	eta := time.Duration(seconds * float64(time.Second))
+
+	return eta, true
+}
