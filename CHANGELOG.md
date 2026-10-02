@@ -14,6 +14,8 @@ Progress reporting is planned for v0.2.0.
 - Format byte sizes using binary units such as KiB, MiB, and GiB.
 - Keep percentage and ETA undefined for unknown or zero response sizes.
 - Report progress updates through an optional download callback.
+- Display downloaded bytes, percentage, average speed, and ETA in the CLI.
+- Omit percentage and ETA when the response size is unknown or zero.
 
 ## [0.1.0] - 2026-10-02
 

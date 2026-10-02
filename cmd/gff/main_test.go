@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/hexlabelposition/gff/internal/downloader"
 )
@@ -173,5 +174,30 @@ func TestRunPreservesExistingFile(t *testing.T) {
 
 	if string(data) != original {
 		t.Errorf("existing file content changed: got %q, want %q", string(data), original)
+	}
+}
+
+func TestFormatProgress(t *testing.T) {
+	tests := []struct {
+		name     string
+		written  int64
+		total    int64
+		elapsed  time.Duration
+		expected string
+	}{
+		{"quarter complete", 250, 1000, time.Second, "25.0% | 250 B / 1000 B | 250 B/s | ETA 3s"},
+		{"complete", 1000, 1000, time.Second, "100.0% | 1000 B / 1000 B | 1000 B/s | ETA 0s"},
+		{"unknown total", 250, -1, time.Second, "250 B downloaded | 250 B/s"},
+		{"empty response", 0, 0, time.Second, "0 B downloaded | 0 B/s"},
+		{"no bytes written", 0, 1000, time.Second * 2, "0.0% | 0 B / 1000 B | 0 B/s"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := formatProgress(tt.written, tt.total, tt.elapsed)
+			if got != tt.expected {
+				t.Errorf("formatProgress() = %q, want %q", got, tt.expected)
+			}
+		})
 	}
 }

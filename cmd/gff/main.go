@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/hexlabelposition/gff/internal/downloader"
+	"github.com/hexlabelposition/gff/internal/progress"
 )
 
 const version = "0.2.0-dev"
@@ -28,10 +30,14 @@ func run() error {
 	}
 
 	client := &http.Client{}
+	started := time.Now()
 	d := downloader.New(client)
 
 	result, err := d.Download(downloader.DownloadRequest{
 		URL: os.Args[1],
+		OnProgress: func(written, total int64) {
+			fmt.Println(formatProgress(written, total, time.Since(started)))
+		},
 	})
 
 	if err != nil {
@@ -42,4 +48,36 @@ func run() error {
 
 	// Always return nil at the end of the run function to indicate success
 	return nil
+}
+
+func formatProgress(written, total int64, elapsed time.Duration) string {
+	state := progress.ProgressWriter{
+		Written: written,
+		Total:   total,
+	}
+
+	percent, percentKnown := state.Percent()
+
+	var text string
+
+	if percentKnown {
+		text = fmt.Sprintf(
+			"%.1f%% | %s / %s",
+			percent,
+			progress.FormatBytes(written),
+			progress.FormatBytes(total),
+		)
+	} else {
+		text = fmt.Sprintf("%s downloaded", progress.FormatBytes(written))
+	}
+
+	speed := state.Speed(elapsed)
+	text += " | " + progress.FormatBytes(int64(speed)) + "/s"
+
+	eta, etaKnown := state.ETA(elapsed)
+	if etaKnown {
+		text += " | ETA " + eta.Round(time.Second).String()
+	}
+
+	return text
 }

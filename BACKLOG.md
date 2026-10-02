@@ -298,8 +298,8 @@ Example:
 ```text
 ubuntu.iso
 ████████████████░░░░░░░░ 67%
-1.8 GB / 2.7 GB
-24 MB/s
+1.8 GiB / 2.7 GiB
+24 MiB/s
 ETA 38s
 ```
 
@@ -314,11 +314,39 @@ ETA 38s
 - [x] Format file sizes:
 
 ```text
-1024 B
-1.4 KiB
+1023 B
+1.5 KiB
 34.8 MiB
 2.1 GiB
 ```
+
+### CLI Display
+
+- [x] Display downloaded bytes, percentage, average speed, and ETA.
+- [x] Omit percentage and ETA for unknown or zero content length.
+- [ ] Display a progress bar when the total size is known.
+- [ ] Update progress on a single terminal line and clear leftover text from longer updates.
+- [ ] Finish the progress line before the success message or an error message.
+
+### Verification
+
+- [x] Test byte counting, including partial writes with errors.
+- [x] Test percentage, average speed, ETA, and byte formatting.
+- [x] Test progress callbacks for successful and partial writes.
+- [x] Test CLI progress text for known, unknown, and zero sizes.
+- [ ] Test progress bar boundaries and omit the bar when the total size is unknown or zero.
+- [ ] Verify download progress end to end with local HTTP servers for known, unknown, and zero content length.
+- [ ] Verify single-line updates and clean line endings after successful and failed downloads.
+
+### Remaining Work — Follow This Order
+
+1. Commit the current CLI progress output and its formatting tests.
+2. Implement and test the progress bar for a known positive size. Keep raw percentage calculations unchanged; clamp only the bar's filled width to its valid range.
+3. Implement single-line terminal updates, clear leftover characters, and finish the line after success or failure.
+4. Complete the remaining verification items above, including unknown-size and empty responses.
+5. Update README and CHANGELOG, run release checks, and follow the release checklist for `v0.2.0`.
+
+Keep the application version at `0.2.0-dev` until release preparation. Complete this phase before starting Phase 4; additional features should be assigned to a future phase before implementation.
 
 ### Writer Wrapper
 
