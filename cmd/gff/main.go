@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,13 +15,13 @@ import (
 const version = "0.3.0-dev"
 
 func main() {
-	if err := run(os.Stdout); err != nil {
+	if err := run(context.Background(), os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(out io.Writer) error {
+func run(ctx context.Context, out io.Writer) error {
 	if len(os.Args) != 2 {
 		return fmt.Errorf("usage: gff <url> | gff version")
 	}
@@ -38,7 +39,7 @@ func run(out io.Writer) error {
 	d := downloader.New(client)
 	var outputErr error
 
-	result, err := d.Download(downloader.DownloadRequest{
+	result, err := d.Download(ctx, downloader.DownloadRequest{
 		URL: os.Args[1],
 		OnProgress: func(written, total int64) {
 			if outputErr != nil {

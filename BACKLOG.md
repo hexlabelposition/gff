@@ -402,7 +402,7 @@ After cancellation, the application should:
 ### Tasks
 
 - [ ] Introduce `.part` files, preserve them on cancellation, and rename them only after successful completion.
-- [ ] Use `context.Context`.
+- [x] Use `context.Context`.
 - [ ] Use `context.WithCancel`.
 - [ ] Handle `SIGINT`.
 - [ ] Handle `SIGTERM`.

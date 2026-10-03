@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,6 +37,7 @@ type DownloadResult struct {
 }
 
 func (d *Downloader) Download(
+	ctx context.Context,
 	request DownloadRequest,
 ) (result DownloadResult, returnErr error) {
 	started := time.Now()
@@ -54,7 +56,18 @@ func (d *Downloader) Download(
 		return DownloadResult{}, fmt.Errorf("URL must include a hostname")
 	}
 
-	resp, err := d.client.Get(parsed.String())
+	httpRequest, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		parsed.String(),
+		nil,
+	)
+
+	if err != nil {
+		return DownloadResult{}, fmt.Errorf("create HTTP request: %w", err)
+	}
+
+	resp, err := d.client.Do(httpRequest)
 
 	if err != nil {
 		return DownloadResult{}, fmt.Errorf("error fetching URL: %w", err)

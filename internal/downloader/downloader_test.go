@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -31,7 +32,7 @@ func TestDownloadUsesDestination(t *testing.T) {
 	var updates int
 	var lastWritten, lastTotal int64
 
-	result, err := d.Download(DownloadRequest{
+	result, err := d.Download(context.Background(), DownloadRequest{
 		URL:         server.URL + "/source.txt",
 		Destination: destination,
 		OnProgress: func(written, total int64) {
@@ -122,7 +123,7 @@ func TestDownloadUnknownContentLength(t *testing.T) {
 	var updates int
 	var lastWritten, lastTotal int64
 
-	result, err := d.Download(DownloadRequest{
+	result, err := d.Download(context.Background(), DownloadRequest{
 		URL:         server.URL + "/source.txt",
 		Destination: destination,
 		OnProgress: func(written, total int64) {
@@ -193,7 +194,7 @@ func TestDownloadEmptyResponse(t *testing.T) {
 
 	d := New(server.Client())
 
-	result, err := d.Download(DownloadRequest{
+	result, err := d.Download(context.Background(), DownloadRequest{
 		URL:         server.URL + "/source.txt",
 		Destination: destination,
 		OnProgress: func(written, total int64) {

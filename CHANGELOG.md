@@ -4,6 +4,8 @@
 
 ### Added
 
+- Pass cancellation context from the CLI to download requests.
+
 ## [0.2.0] - 2026-10-02
 
 ### Added

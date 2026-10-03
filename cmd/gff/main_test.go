@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -39,7 +40,7 @@ func TestRunDownloadsFile(t *testing.T) {
 
 	var output bytes.Buffer
 
-	if err := run(&output); err != nil {
+	if err := run(context.Background(), &output); err != nil {
 		t.Fatalf("run: %v", err)
 	}
 
@@ -83,7 +84,7 @@ func TestRunRejectsNotFound(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/missing.txt"}
 
-	err := run(io.Discard)
+	err := run(context.Background(), io.Discard)
 	var statusErr *downloader.HTTPStatusError
 
 	if !errors.As(err, &statusErr) {
@@ -130,7 +131,7 @@ func TestRunFollowsRedirects(t *testing.T) {
 
 	os.Args = []string{"gff", server.URL + "/start.txt"}
 
-	if err := run(io.Discard); err != nil {
+	if err := run(context.Background(), io.Discard); err != nil {
 		t.Fatalf("run: %v", err)
 	}
 
@@ -172,7 +173,7 @@ func TestRunPreservesExistingFile(t *testing.T) {
 		t.Fatalf("prepare existing file: %v", err)
 	}
 
-	if err := run(io.Discard); !errors.Is(err, os.ErrExist) {
+	if err := run(context.Background(), io.Discard); !errors.Is(err, os.ErrExist) {
 		t.Fatalf("expected file-exists error, got: %v", err)
 	}
 
@@ -244,7 +245,7 @@ func TestRunFinishesProgressLineOnDownloadError(t *testing.T) {
 
 	var output bytes.Buffer
 
-	err := run(&output)
+	err := run(context.Background(), &output)
 	if !errors.Is(err, io.ErrUnexpectedEOF) {
 		t.Fatalf("expected incomplete response error, got: %v", err)
 	}
