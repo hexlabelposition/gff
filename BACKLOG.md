@@ -1,6 +1,6 @@
 # gff
 
-`gff` (**Go Fast Fetch**) is a CLI download manager written in Go.
+`gff` (**go fast fetch**) is a CLI download manager written in Go.
 
 The primary goal of the project is to learn Go through practice by gradually building a real CLI application while covering as many important language features and standard library capabilities as possible.
 
@@ -67,9 +67,8 @@ gff https://example.com/archive.zip
 Example output from v0.2.0 onward (v0.1.0 reports completion without a progress bar):
 
 ```text
-archive.zip
-100% |████████████████████████████| 124 MB
-Downloaded in 4.2s
+████████████████████ 100.0% | 124.0 MiB / 124.0 MiB | 29.5 MiB/s | ETA 0s
+Saved archive.zip (130023424 bytes)
 ```
 
 ---
@@ -345,9 +344,9 @@ ETA 38s
 - [x] Implement single-line terminal updates, clear leftover characters, and finish the line after success or failure.
 - [x] Complete the verification items above, including unknown-size and empty responses.
 - [x] Update README and CHANGELOG with implemented progress behavior and current terminal limitations.
-- [ ] Commit the documentation, run final formatting, vet, test, lint, and build checks, and verify the built CLI.
-- [ ] Push the reviewed changes and confirm CI passes.
-- [ ] Follow the release checklist to update version metadata, verify the release commit, and tag `v0.2.0`.
+- [x] Commit the documentation, run final formatting, vet, test, lint, and build checks, and verify the built CLI.
+- [x] Push the reviewed changes and confirm CI passes.
+- [x] Follow the release checklist to update version metadata, verify the release commit, and tag `v0.2.0`.
 
 For v0.2.0, progress output targets ANSI-compatible terminals. Redirected stdout
 contains control sequences. Graceful signal handling belongs to Phase 4;
@@ -442,7 +441,7 @@ If a partial file exists:
 file.iso.part
 ```
 
-GFF should attempt to resume the download.
+gff should attempt to resume the download.
 
 ### HTTP Range
 
@@ -1168,7 +1167,7 @@ Investigate:
 
 Target release: **v1.0.0**.
 
-GFF should recover correctly from:
+gff should recover correctly from:
 
 - application crashes;
 - `Ctrl+C`;
@@ -1240,7 +1239,7 @@ Inject values using:
 
 Target release: **v1.0.0**.
 
-Build GFF for:
+Build gff for:
 
 ```text
 linux/amd64
@@ -1440,7 +1439,7 @@ An interactive TUI can be added later:
 
 ```text
 ┌──────────────────────────────────────────────┐
-│ GFF — Go Fast Fetch                         │
+│ gff — go fast fetch                         │
 ├──────────────────────────────────────────────┤
 │ ubuntu.iso         ███████████░░  82%       │
 │ archlinux.iso      █████░░░░░░░  41%       │
@@ -1456,11 +1455,11 @@ This should be treated as a separate phase and should not be part of the MVP.
 
 The first practically useful version of `gff` should be able to:
 
-- [ ] download a file from a URL;
-- [ ] automatically determine the filename;
-- [ ] display download progress;
-- [ ] display download speed;
-- [ ] display ETA;
+- [x] download a file from a URL;
+- [x] automatically determine the filename;
+- [x] display download progress;
+- [x] display download speed;
+- [x] display ETA;
 - [ ] preserve incomplete downloads;
 - [ ] resume downloads using HTTP Range;
 - [ ] handle `Ctrl+C` correctly;
@@ -1571,7 +1570,7 @@ Add:
 - configurable connection count;
 - rate limiting.
 
-At this stage, the name **Go Fast Fetch** starts describing not only the project name but also its functionality.
+At this stage, the name **go fast fetch** starts describing not only the project name but also its functionality.
 
 ### v0.7.0 — Production CLI
 
@@ -1617,23 +1616,23 @@ Track these topics as they naturally appear. Optional features such as generics,
 
 By `v1.0.0`, review practical experience with the following Go features:
 
-- [ ] Variables
-- [ ] Constants
-- [ ] Functions
-- [ ] Multiple return values
-- [ ] Named types
-- [ ] Structs
-- [ ] Methods
-- [ ] Pointers
-- [ ] Interfaces
+- [x] Variables
+- [x] Constants
+- [x] Functions
+- [x] Multiple return values
+- [x] Named types
+- [x] Structs
+- [x] Methods
+- [x] Pointers
+- [x] Interfaces
 - [ ] Interface composition
-- [ ] Errors
-- [ ] Error wrapping
-- [ ] `errors.Is`
-- [ ] `errors.As`
-- [ ] `defer`
+- [x] Errors
+- [x] Error wrapping
+- [x] `errors.Is`
+- [x] `errors.As`
+- [x] `defer`
 - [ ] `panic/recover`
-- [ ] Slices
+- [x] Slices
 - [ ] Maps
 - [ ] Generics
 - [ ] Goroutines
@@ -1644,14 +1643,14 @@ By `v1.0.0`, review practical experience with the following Go features:
 - [ ] `sync.RWMutex`
 - [ ] Atomics
 - [ ] Context
-- [ ] HTTP
-- [ ] File I/O
+- [x] HTTP
+- [x] File I/O
 - [ ] JSON
 - [ ] Hashing
 - [ ] Signals
-- [ ] Testing
-- [ ] Table-driven tests
-- [ ] Integration tests
+- [x] Testing
+- [x] Table-driven tests
+- [x] Integration tests
 - [ ] Race detector
 - [ ] Benchmarks
 - [ ] Profiling
@@ -1674,7 +1673,7 @@ For example:
 goroutines
 ```
 
-should be introduced not because "we need to learn goroutines", but because GFF starts downloading multiple files concurrently.
+should be introduced not because "we need to learn goroutines", but because gff starts downloading multiple files concurrently.
 
 ```text
 channels
