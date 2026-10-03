@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -231,5 +232,90 @@ func TestDownloadEmptyResponse(t *testing.T) {
 
 	if len(data) != 0 {
 		t.Errorf("file size: got %d, want 0", len(data))
+	}
+}
+
+func TestDownloadCanceledContext(t *testing.T) {
+	destination := filepath.Join(t.TempDir(), "canceled.txt")
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if _, err := io.WriteString(w, "hello"); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	d := New(server.Client())
+
+	_, err := d.Download(ctx, DownloadRequest{
+		URL:         server.URL,
+		Destination: destination,
+	})
+
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+
+	_, err = os.Stat(destination)
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no destination file, got %v", err)
+	}
+}
+
+func TestDownloadCanceledDuringTransfer(t *testing.T) {
+	destination := filepath.Join(t.TempDir(), "canceled.txt")
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Length", "100")
+
+			if _, err := io.WriteString(w, "hello"); err != nil {
+				t.Errorf("write response: %v", err)
+				return
+			}
+
+			if err := http.NewResponseController(w).Flush(); err != nil {
+				t.Errorf("flush response: %v", err)
+				return
+			}
+
+			<-r.Context().Done()
+		},
+	))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	d := New(server.Client())
+
+	_, err := d.Download(ctx, DownloadRequest{
+		URL:         server.URL,
+		Destination: destination,
+		OnProgress: func(written, total int64) {
+			if written > 0 {
+				cancel()
+			}
+		},
+	})
+
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+
+	data, err := os.ReadFile(destination)
+
+	if err != nil {
+		t.Fatalf("read partial file: %v", err)
+	}
+
+	if string(data) != "hello" {
+		t.Errorf("file content: got %q, want %q", string(data), "hello")
 	}
 }

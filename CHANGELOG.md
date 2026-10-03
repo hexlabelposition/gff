@@ -5,6 +5,7 @@
 ### Added
 
 - Pass cancellation context from the CLI to download requests.
+- Test download cancellation before a request and during data transfer.
 
 ## [0.2.0] - 2026-10-02
 
