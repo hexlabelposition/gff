@@ -400,7 +400,7 @@ After cancellation, the application should:
 
 ### Tasks
 
-- [ ] Introduce `.part` files, preserve them on cancellation, and rename them only after successful completion.
+- [x] Introduce `.part` files, preserve them on cancellation, and rename them only after successful completion.
 - [x] Use `context.Context`.
 - [x] Use `context.WithCancel`.
 - [ ] Handle `SIGINT`.
@@ -1460,7 +1460,7 @@ The first practically useful version of `gff` should be able to:
 - [x] display download progress;
 - [x] display download speed;
 - [x] display ETA;
-- [ ] preserve incomplete downloads;
+- [x] preserve incomplete downloads;
 - [ ] resume downloads using HTTP Range;
 - [ ] handle `Ctrl+C` correctly;
 - [ ] process multiple downloads;

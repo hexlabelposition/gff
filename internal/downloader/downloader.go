@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -98,8 +99,26 @@ func (d *Downloader) Download(
 		}
 	}
 
+	_, err = os.Lstat(filename)
+
+	if err == nil {
+		return DownloadResult{}, fmt.Errorf(
+			"destination already exists: %w",
+			os.ErrExist,
+		)
+	}
+
+	if !errors.Is(err, os.ErrNotExist) {
+		return DownloadResult{}, fmt.Errorf(
+			"check destination: %w",
+			err,
+		)
+	}
+
+	partialPath := filename + ".part"
+
 	file, err := os.OpenFile(
-		filename,
+		partialPath,
 		os.O_WRONLY|os.O_CREATE|os.O_EXCL,
 		0644,
 	)
@@ -122,6 +141,20 @@ func (d *Downloader) Download(
 	}
 	if closeErr != nil {
 		return DownloadResult{}, fmt.Errorf("close file: %w", closeErr)
+	}
+
+	if err := os.Link(partialPath, filename); err != nil {
+		return DownloadResult{}, fmt.Errorf(
+			"publish downloaded file: %w",
+			err,
+		)
+	}
+
+	if err := os.Remove(partialPath); err != nil {
+		return DownloadResult{}, fmt.Errorf(
+			"remove partial file: %w",
+			err,
+		)
 	}
 
 	return DownloadResult{

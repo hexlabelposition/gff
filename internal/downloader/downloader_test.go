@@ -96,6 +96,12 @@ func TestDownloadUsesDestination(t *testing.T) {
 	if string(data) != want {
 		t.Errorf("file content: got %q, want %q", string(data), want)
 	}
+
+	_, err = os.Stat(destination + ".part")
+
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no partial file after success, got %v", err)
+	}
 }
 
 func TestDownloadUnknownContentLength(t *testing.T) {
@@ -309,7 +315,7 @@ func TestDownloadCanceledDuringTransfer(t *testing.T) {
 		t.Fatalf("expected context.Canceled, got %v", err)
 	}
 
-	data, err := os.ReadFile(destination)
+	data, err := os.ReadFile(destination + ".part")
 
 	if err != nil {
 		t.Fatalf("read partial file: %v", err)
@@ -317,5 +323,58 @@ func TestDownloadCanceledDuringTransfer(t *testing.T) {
 
 	if string(data) != "hello" {
 		t.Errorf("file content: got %q, want %q", string(data), "hello")
+	}
+
+	_, err = os.Stat(destination)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no completed file after cancellation, got %v", err)
+	}
+}
+
+func TestDownloadPreservesExistingPartialFile(t *testing.T) {
+	destination := filepath.Join(t.TempDir(), "existing.txt")
+	partialPath := destination + ".part"
+
+	const original = "previous download"
+
+	if err := os.WriteFile(partialPath, []byte(original), 0644); err != nil {
+		t.Fatalf("prepare partial file: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if _, err := io.WriteString(w, "new content\n"); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+	defer server.Close()
+
+	d := New(server.Client())
+
+	_, err := d.Download(context.Background(), DownloadRequest{
+		URL:         server.URL,
+		Destination: destination,
+	})
+
+	if !errors.Is(err, os.ErrExist) {
+		t.Fatalf("expected file-exists error, got %v", err)
+	}
+
+	data, err := os.ReadFile(partialPath)
+
+	if err != nil {
+		t.Fatalf("read existing partial file: %v", err)
+	}
+
+	if string(data) != original {
+		t.Errorf("partial file content: got %q, want %q", string(data), original)
+	}
+
+	_, err = os.Stat(destination)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no completed file after error, got %v", err)
 	}
 }

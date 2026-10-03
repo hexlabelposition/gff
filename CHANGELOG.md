@@ -6,6 +6,7 @@
 
 - Pass cancellation context from the CLI to download requests.
 - Test download cancellation before a request and during data transfer.
+- Preserve incomplete downloads in `.part` files and publish completed files without overwriting existing files.
 
 ## [0.2.0] - 2026-10-02
 

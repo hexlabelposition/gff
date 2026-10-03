@@ -262,7 +262,7 @@ func TestRunFinishesProgressLineOnDownloadError(t *testing.T) {
 		t.Errorf("unexpected success message: %q", text)
 	}
 
-	data, err := os.ReadFile("broken.txt")
+	data, err := os.ReadFile("broken.txt.part")
 
 	if err != nil {
 		t.Fatalf("read downloaded file: %v", err)
