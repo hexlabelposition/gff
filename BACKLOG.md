@@ -400,12 +400,12 @@ After cancellation, the application should:
 
 ### Tasks
 
-- [x] Introduce `.part` files, preserve them on cancellation, and rename them only after successful completion.
+- [x] Introduce `.part` files, preserve them on cancellation, and publish the final filename only after successful completion without overwriting existing files.
 - [x] Use `context.Context`.
 - [x] Use `context.WithCancel`.
-- [ ] Handle `SIGINT`.
-- [ ] Handle `SIGTERM`.
-- [ ] Implement graceful shutdown.
+- [x] Handle `SIGINT`.
+- [x] Handle `SIGTERM`.
+- [x] Implement graceful shutdown.
 
 ### Implementation Order
 
@@ -1462,7 +1462,7 @@ The first practically useful version of `gff` should be able to:
 - [x] display ETA;
 - [x] preserve incomplete downloads;
 - [ ] resume downloads using HTTP Range;
-- [ ] handle `Ctrl+C` correctly;
+- [x] handle `Ctrl+C` correctly;
 - [ ] process multiple downloads;
 - [ ] limit concurrent downloads;
 - [ ] retry temporary failures.

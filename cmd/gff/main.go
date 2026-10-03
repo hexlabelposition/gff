@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/hexlabelposition/gff/internal/downloader"
@@ -15,8 +17,17 @@ import (
 const version = "0.3.0-dev"
 
 func main() {
-	if err := run(context.Background(), os.Stdout); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+
+	err := run(ctx, os.Stdout)
+	stop()
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(1)
 	}
 }
