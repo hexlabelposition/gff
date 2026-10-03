@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -370,6 +371,180 @@ func TestDownloadPreservesExistingPartialFile(t *testing.T) {
 
 	if string(data) != original {
 		t.Errorf("partial file content: got %q, want %q", string(data), original)
+	}
+
+	_, err = os.Stat(destination)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no completed file after error, got %v", err)
+	}
+}
+
+func TestDownloadRequestsRemainingBytes(t *testing.T) {
+	destination := filepath.Join(t.TempDir(), "hello.txt")
+	partialPath := destination + ".part"
+
+	if err := os.WriteFile(partialPath, []byte("hello"), 0644); err != nil {
+		t.Fatalf("prepare partial file: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			got := r.Header.Get("Range")
+
+			if got != "bytes=5-" {
+				t.Errorf("Range: got %q, want %q", got, "bytes=5-")
+			}
+
+			w.Header().Set("Content-Range", "bytes 5-10/11")
+			w.WriteHeader(http.StatusPartialContent)
+
+			if _, err := io.WriteString(w, " world"); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+	defer server.Close()
+
+	d := New(server.Client())
+
+	var lastWritten, lastTotal int64
+
+	result, err := d.Download(context.Background(), DownloadRequest{
+		URL:         server.URL,
+		Destination: destination,
+		OnProgress: func(written, total int64) {
+			lastWritten = written
+			lastTotal = total
+		},
+	})
+	if err != nil {
+		t.Fatalf("download: %v", err)
+	}
+
+	data, err := os.ReadFile(destination)
+	if err != nil {
+		t.Fatalf("read completed file: %v", err)
+	}
+
+	if string(data) != "hello world" {
+		t.Errorf("file content: got %q, want %q", string(data), "hello world")
+	}
+
+	if result.Size != 11 || result.ContentLength != 11 {
+		t.Errorf(
+			"size: got %d, content length: got %d; want both 11",
+			result.Size,
+			result.ContentLength,
+		)
+	}
+
+	_, err = os.Stat(partialPath)
+
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("expected no partial file after success, got %v", err)
+	}
+
+	if lastWritten != 11 || lastTotal != 11 {
+		t.Errorf(
+			"progress: got %d/%d, want 11/11",
+			lastWritten,
+			lastTotal,
+		)
+	}
+}
+
+func TestParseContentRange(t *testing.T) {
+	tests := []struct {
+		name    string
+		value   string
+		start   int64
+		end     int64
+		total   int64
+		wantErr bool
+	}{
+		{"remaining bytes", "bytes 5-10/11", 5, 10, 11, false},
+		{"whole file", "bytes 0-10/11", 0, 10, 11, false},
+		{"single byte", "bytes 0-0/1", 0, 0, 1, false},
+		{"empty header", "", 0, 0, 0, true},
+		{"wrong unit", "items 5-10/11", 0, 0, 0, true},
+		{"missing total", "bytes 5-10", 0, 0, 0, true},
+		{"invalid start", "bytes x-10/11", 0, 0, 0, true},
+		{"reversed bounds", "bytes 10-5/11", 0, 0, 0, true},
+		{"end outside total", "bytes 5-11/11", 0, 0, 0, true},
+		{"unknown total unsupported", "bytes 5-10/*", 0, 0, 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			start, end, total, err := parseContentRange(tt.value)
+
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("parseContentRange() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			if start != tt.start || end != tt.end || total != tt.total {
+				t.Errorf(
+					"range: got %d-%d/%d, want %d-%d/%d",
+					start, end, total,
+					tt.start, tt.end, tt.total,
+				)
+			}
+		})
+	}
+}
+
+func TestDownloadRejectsMismatchedRange(t *testing.T) {
+	destination := filepath.Join(t.TempDir(), "hello.txt")
+	partialPath := destination + ".part"
+
+	if err := os.WriteFile(partialPath, []byte("hello"), 0644); err != nil {
+		t.Fatalf("prepare partial file: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if got := r.Header.Get("Range"); got != "bytes=5-" {
+				t.Errorf("Range: got %q, want %q", got, "bytes=5-")
+			}
+
+			w.Header().Set("Content-Range", "bytes 0-10/11")
+			w.WriteHeader(http.StatusPartialContent)
+
+			if _, err := io.WriteString(w, "hello world"); err != nil {
+				t.Errorf("write response: %v", err)
+			}
+		},
+	))
+	defer server.Close()
+
+	d := New(server.Client())
+
+	_, err := d.Download(context.Background(), DownloadRequest{
+		URL:         server.URL,
+		Destination: destination,
+	})
+
+	if err == nil {
+		t.Fatal("expected range start mismatch error")
+	}
+
+	if !strings.Contains(err.Error(), "range start mismatch") {
+		t.Fatalf("expected range start mismatch, got %v", err)
+	}
+
+	data, err := os.ReadFile(partialPath)
+
+	if err != nil {
+		t.Fatalf("read partial file: %v", err)
+	}
+
+	if string(data) != "hello" {
+		t.Errorf("partial content: got %q, want %q", string(data), "hello")
 	}
 
 	_, err = os.Stat(destination)

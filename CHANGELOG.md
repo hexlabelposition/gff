@@ -8,6 +8,7 @@
 - Test download cancellation before a request and during data transfer.
 - Preserve incomplete downloads in `.part` files and publish completed files without overwriting existing files.
 - Gracefully cancel downloads on SIGINT and SIGTERM, preserving partial files.
+- Resume partial downloads using HTTP Range, validate Content-Range, and include previously saved bytes in progress.
 
 ## [0.2.0] - 2026-10-02
 

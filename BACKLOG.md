@@ -461,14 +461,14 @@ Confirm support using the actual Range response; the header alone is not a guara
 
 ### Tasks
 
-- [ ] Reuse the `.part` file lifecycle introduced in Phase 4.
-- [ ] Determine the current partial file size.
-- [ ] Send a `Range` request.
-- [ ] Verify `206 Partial Content` and the matching `Content-Range` offset.
+- [x] Reuse the `.part` file lifecycle introduced in Phase 4.
+- [x] Determine the current partial file size.
+- [x] Send a `Range` request.
+- [x] Verify `206 Partial Content` and the matching `Content-Range` offset.
 - [ ] Handle `200 OK` by restarting safely rather than appending a full response.
 - [ ] Handle `416 Range Not Satisfiable`.
 - [ ] Save and check ETag or Last-Modified validators where available so a changed remote file is not appended to an old partial file.
-- [ ] Continue writing from the correct position.
+- [x] Continue writing from the correct position.
 - [ ] Rename the `.part` file after successful completion.
 
 #### What We Learn

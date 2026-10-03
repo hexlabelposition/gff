@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hexlabelposition/gff/internal/progress"
@@ -57,38 +59,6 @@ func (d *Downloader) Download(
 		return DownloadResult{}, fmt.Errorf("URL must include a hostname")
 	}
 
-	httpRequest, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodGet,
-		parsed.String(),
-		nil,
-	)
-
-	if err != nil {
-		return DownloadResult{}, fmt.Errorf("create HTTP request: %w", err)
-	}
-
-	resp, err := d.client.Do(httpRequest)
-
-	if err != nil {
-		return DownloadResult{}, fmt.Errorf("error fetching URL: %w", err)
-	}
-
-	// Ensure the response body is closed when we're done with it
-	defer func() {
-		if err := resp.Body.Close(); err != nil && returnErr == nil {
-			result = DownloadResult{}
-			returnErr = fmt.Errorf("close response body: %w", err)
-		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return DownloadResult{}, &HTTPStatusError{
-			URL:        parsed.String(),
-			StatusCode: resp.StatusCode,
-		}
-	}
-
 	filename := request.Destination
 
 	if filename == "" {
@@ -117,9 +87,121 @@ func (d *Downloader) Download(
 
 	partialPath := filename + ".part"
 
+	var offset int64
+
+	info, err := os.Lstat(partialPath)
+	if err == nil {
+		if !info.Mode().IsRegular() {
+			return DownloadResult{}, fmt.Errorf(
+				"partial path must be a regular file",
+			)
+		}
+
+		offset = info.Size()
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return DownloadResult{}, fmt.Errorf(
+			"check partial file: %w",
+			err,
+		)
+	}
+
+	httpRequest, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		parsed.String(),
+		nil,
+	)
+
+	if err != nil {
+		return DownloadResult{}, fmt.Errorf("create HTTP request: %w", err)
+	}
+
+	if offset > 0 {
+		httpRequest.Header.Set(
+			"Range",
+			fmt.Sprintf("bytes=%d-", offset),
+		)
+	}
+
+	resp, err := d.client.Do(httpRequest)
+
+	if err != nil {
+		return DownloadResult{}, fmt.Errorf("error fetching URL: %w", err)
+	}
+
+	// Ensure the response body is closed when we're done with it
+	defer func() {
+		if err := resp.Body.Close(); err != nil && returnErr == nil {
+			result = DownloadResult{}
+			returnErr = fmt.Errorf("close response body: %w", err)
+		}
+	}()
+
+	totalSize := resp.ContentLength
+
+	if resp.StatusCode == http.StatusPartialContent {
+		if offset == 0 {
+			return DownloadResult{}, fmt.Errorf(
+				"unexpected partial response without a Range request",
+			)
+		}
+
+		start, end, total, err := parseContentRange(
+			resp.Header.Get("Content-Range"),
+		)
+		if err != nil {
+			return DownloadResult{}, fmt.Errorf(
+				"validate Content-Range: %w",
+				err,
+			)
+		}
+
+		if start != offset {
+			return DownloadResult{}, fmt.Errorf(
+				"range start mismatch: got %d, want %d",
+				start,
+				offset,
+			)
+		}
+
+		if end != total-1 {
+			return DownloadResult{}, fmt.Errorf(
+				"incomplete response range: ends at %d, want %d",
+				end,
+				total-1,
+			)
+		}
+
+		expectedLength := end - start + 1
+
+		if resp.ContentLength >= 0 && resp.ContentLength != expectedLength {
+			return DownloadResult{}, fmt.Errorf(
+				"range length mismatch: got %d, want %d",
+				resp.ContentLength,
+				expectedLength,
+			)
+		}
+
+		totalSize = total
+	}
+
+	if resp.StatusCode != http.StatusOK &&
+		resp.StatusCode != http.StatusPartialContent {
+		return DownloadResult{}, &HTTPStatusError{
+			URL:        parsed.String(),
+			StatusCode: resp.StatusCode,
+		}
+	}
+
+	flags := os.O_WRONLY | os.O_CREATE | os.O_EXCL
+
+	if resp.StatusCode == http.StatusPartialContent {
+		flags = os.O_WRONLY | os.O_APPEND
+	}
+
 	file, err := os.OpenFile(
 		partialPath,
-		os.O_WRONLY|os.O_CREATE|os.O_EXCL,
+		flags,
 		0644,
 	)
 
@@ -129,7 +211,8 @@ func (d *Downloader) Download(
 
 	progressWriter := &progress.ProgressWriter{
 		Writer:     file,
-		Total:      resp.ContentLength,
+		Total:      totalSize,
+		Written:    offset,
 		OnProgress: request.OnProgress,
 	}
 
@@ -141,6 +224,16 @@ func (d *Downloader) Download(
 	}
 	if closeErr != nil {
 		return DownloadResult{}, fmt.Errorf("close file: %w", closeErr)
+	}
+
+	completedSize := offset + written
+
+	if totalSize >= 0 && completedSize != totalSize {
+		return DownloadResult{}, fmt.Errorf(
+			"download size mismatch: got %d, want %d",
+			completedSize,
+			totalSize,
+		)
 	}
 
 	if err := os.Link(partialPath, filename); err != nil {
@@ -159,10 +252,10 @@ func (d *Downloader) Download(
 
 	return DownloadResult{
 		Path:          filename,
-		Size:          written,
+		Size:          completedSize,
+		ContentLength: totalSize,
 		Duration:      time.Since(started),
 		StatusCode:    resp.StatusCode,
-		ContentLength: resp.ContentLength,
 	}, nil
 }
 
@@ -177,4 +270,45 @@ func (e *HTTPStatusError) Error() string {
 		e.StatusCode,
 		e.URL,
 	)
+}
+
+func parseContentRange(value string) (
+	start, end, total int64,
+	err error,
+) {
+	unit, rest, ok := strings.Cut(value, " ")
+	if !ok || unit != "bytes" {
+		return 0, 0, 0, fmt.Errorf("invalid Content-Range: %q", value)
+	}
+
+	bounds, totalText, ok := strings.Cut(rest, "/")
+	if !ok {
+		return 0, 0, 0, fmt.Errorf("invalid Content-Range: %q", value)
+	}
+
+	total, err = strconv.ParseInt(totalText, 10, 64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("parse range total: %w", err)
+	}
+
+	startText, endText, ok := strings.Cut(bounds, "-")
+	if !ok {
+		return 0, 0, 0, fmt.Errorf("invalid Content-Range: %q", value)
+	}
+
+	end, err = strconv.ParseInt(endText, 10, 64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("parse range end: %w", err)
+	}
+
+	start, err = strconv.ParseInt(startText, 10, 64)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("parse range start: %w", err)
+	}
+
+	if start < 0 || end < start || total <= end {
+		return 0, 0, 0, fmt.Errorf("invalid Content-Range bounds: %q", value)
+	}
+
+	return start, end, total, nil
 }
