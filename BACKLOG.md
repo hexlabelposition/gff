@@ -408,6 +408,14 @@ After cancellation, the application should:
 - [ ] Handle `SIGTERM`.
 - [ ] Implement graceful shutdown.
 
+### Implementation Order
+
+1. Pass context from the CLI through the downloader to the HTTP request.
+2. Test cancellation with context.WithCancel and local HTTP servers.
+3. Introduce .part files, preserve incomplete downloads, and rename after success.
+4. Handle SIGINT and SIGTERM with signal.NotifyContext.
+5. Verify resource cleanup, progress line completion, and partial-file preservation.
+
 #### What We Learn
 
 - context

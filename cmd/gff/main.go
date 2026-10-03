@@ -11,7 +11,7 @@ import (
 	"github.com/hexlabelposition/gff/internal/progress"
 )
 
-const version = "0.2.0"
+const version = "0.3.0-dev"
 
 func main() {
 	if err := run(os.Stdout); err != nil {
